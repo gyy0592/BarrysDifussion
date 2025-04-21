@@ -1,0 +1,35 @@
+# Configuration for time series diffusion model
+
+# General configuration
+general:
+  signal_length: 128  # Length of the time series signal
+  batch_size: 128     # Batch size for training
+  learning_rate: 0.0002  # Learning rate (2e-4)
+  epochs: 100         # Number of training epochs
+
+# Dataset parameters
+dataset:
+  n_samples_train: 10000  # Number of training samples
+  n_samples_test: 1000    # Number of test samples
+  noise_std_dev: 0.3      # Standard deviation of the Gaussian noise
+
+# Diffusion model parameters
+diffusion:
+  timesteps: 200    # Number of diffusion steps (T in the paper)
+  cosine_schedule_s: 0.008  # s parameter for cosine schedule
+
+# Model architecture
+model:
+  in_channels: 1               # Number of input channels
+  out_channels: 1              # Number of output channels
+  time_dim: 1024               # Time embedding dimension
+  base_channels: 64            # Base channels
+  channel_mults: [1, 2, 4, 8]  # Channel multipliers
+  use_attention: true          # Use attention in bottleneck
+  multi_level_attention: true  # Attention at multiple levels
+  attention_levels: [2, 3]     # Apply attention at deeper levels
+  kernel_size: 5               # Kernel size
+  direct_path_scale: 0.2       # Direct path scale
+  min_groups: 8                # Minimum groups
+  num_res_blocks: 3            # Number of residual blocks per level
+  dropout_rate: 0.3            # Dropout rate
