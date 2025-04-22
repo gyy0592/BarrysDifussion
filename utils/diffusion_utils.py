@@ -65,13 +65,8 @@ def p_sample(model, x, t, t_index, betas, alphas, sqrt_one_minus_alphas_cumprod,
     else:
         posterior_variance_t = extract(posterior_variance, t, x.shape)
         noise = torch.randn_like(x)
-        
-        # Apply noise scheduling - reduce noise at later steps
-        noise_scale = torch.ones_like(posterior_variance_t)
-        if t_index < 20:  # Reduce noise gradually in the last steps
-            noise_scale = noise_scale * (t_index / 20.0)
-            
-        return model_mean + torch.sqrt(posterior_variance_t) * noise_scale * noise
+                 
+        return model_mean + torch.sqrt(posterior_variance_t) * noise
 
 @torch.no_grad()
 def denoise_signal(model, initial_noisy_signal, start_step=None, betas=None, alphas=None, sqrt_one_minus_alphas_cumprod=None, posterior_variance=None, TIMESTEPS=None):
