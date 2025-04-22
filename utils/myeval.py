@@ -47,6 +47,9 @@ def evaluate_model(model, test_loader, config, device):
 
     # Denoise the signals
     print("Starting denoising process for evaluation...")
+    # Example modification to denoise_signal call in myeval.py
+    estimated_step = calculate_equivalent_timestep(noisy_signals_batch, clean_signals_batch, diffusion_consts, TIMESTEPS)
+    denoising_start_step = estimated_step
     denoised_signals_batch = denoise_signal(model, noisy_signals_batch, start_step=denoising_start_step, betas=betas, alphas=alphas, sqrt_one_minus_alphas_cumprod=sqrt_one_minus_alphas_cumprod, posterior_variance=posterior_variance, TIMESTEPS=TIMESTEPS)
 
     # Move to CPU for plotting
@@ -135,3 +138,40 @@ def evaluate_model(model, test_loader, config, device):
     print(f"Plots saved to {output_dir}/")
     
     return mse_noisy, mse_denoised, improvement
+
+def calculate_equivalent_timestep(noisy_signals, clean_signals, diffusion_consts, timesteps):
+    """
+    Calculate which timestep in the diffusion process has noise level 
+    most similar to the test data.
+    
+    Args:
+        noisy_signals: The noisy signals from test data
+        clean_signals: The clean signals from test data
+        diffusion_consts: Dictionary of diffusion constants
+        timesteps: Total number of timesteps in diffusion
+    
+    Returns:
+        The estimated timestep to start denoising from
+    """
+    # Calculate average noise level in test data
+    noise = noisy_signals - clean_signals
+    test_noise_power = torch.mean(torch.pow(noise, 2)).item()
+    
+    # Get the diffusion schedule constants
+    sqrt_one_minus_alphas_cumprod = diffusion_consts['sqrt_one_minus_alphas_cumprod']
+    
+    # Find the timestep with the closest noise level
+    best_timestep = 0
+    min_diff = float('inf')
+    
+    # Check various timesteps to find the best match
+    for t in range(timesteps):
+        # Noise power at timestep t
+        t_noise_power = sqrt_one_minus_alphas_cumprod[t].item() ** 2
+        diff = abs(t_noise_power - test_noise_power)
+        
+        if diff < min_diff:
+            min_diff = diff
+            best_timestep = t
+    
+    return best_timestep
